@@ -1,0 +1,13 @@
+<resources>
+    <string name="detail_back_cd">Retour</string>
+    <string name="detail_product_price">%s€</string>
+    <string name="detail_label_rating">Note</string>
+    <string name="detail_rating_value">★ %s</string>
+    <string name="detail_label_reviews">Avis</string>
+    <string name="detail_label_brand">Marque</string>
+    <string name="detail_label_description">Description</string>
+    <string name="detail_error_title">Erreur</string>
+    <string name="detail_retry">Réessayer</string>
+    <string name="detail_unknown_error">Erreur inconnue</string>
+    <string name="detail_product_image_placeholder">Visuel indisponible</string>
+</resources>
