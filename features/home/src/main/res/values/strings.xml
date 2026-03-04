@@ -13,4 +13,5 @@
     <string name="home_review_rating">★ %s</string>
     <string name="home_error_title">Une erreur est survenue</string>
     <string name="home_retry">Réessayer</string>
+    <string name="home_empty_title">Aucun produit trouvé</string>
 </resources>

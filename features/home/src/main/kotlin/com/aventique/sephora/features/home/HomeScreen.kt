@@ -101,7 +101,7 @@ fun HomeScreenContent(
             )
         },
         floatingActionButton = {
-            if (!uiState.isLoading && uiState.error == null) {
+            if (!uiState.isLoading && uiState.error == null && uiState.products.isNotEmpty()) {
                 ExtendedFloatingActionButton(
                     onClick = toggleSortOrder,
                     icon = {
@@ -151,6 +151,10 @@ fun HomeScreenContent(
                             onRetry = onRefresh,
                             modifier = Modifier.align(Alignment.Center),
                         )
+                    }
+
+                    uiState.products.isEmpty() -> {
+                        EmptyContent(modifier = Modifier.align(Alignment.Center))
                     }
 
                     else -> {
@@ -430,6 +434,17 @@ private fun ReviewItem(review: Review) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+@Composable
+private fun EmptyContent(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.home_empty_title),
+        modifier = modifier.padding(16.dp),
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+    )
 }
 
 @Composable
