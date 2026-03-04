@@ -39,15 +39,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -101,7 +107,7 @@ fun HomeScreenContent(
             )
         },
         floatingActionButton = {
-            if (!uiState.isLoading && uiState.error == null && uiState.products.isNotEmpty()) {
+            if (uiState is HomeUiState.Success) {
                 ExtendedFloatingActionButton(
                     onClick = toggleSortOrder,
                     icon = {
@@ -136,33 +142,35 @@ fun HomeScreenContent(
                 onClear = { onSearchQueryChange("") }
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = onRefresh,
+                modifier = Modifier.fillMaxSize(),
             ) {
-                when {
-                    uiState.isLoading -> {
+                when (uiState) {
+                    HomeUiState.Loading -> {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
 
-                    uiState.error != null -> {
-                        ErrorContent(
-                            message = uiState.error,
-                            onRetry = onRefresh,
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-                    }
+                    is HomeUiState.Success -> {
 
-                    uiState.products.isEmpty() -> {
-                        EmptyContent(modifier = Modifier.align(Alignment.Center))
-                    }
-
-                    else -> {
                         ProductList(
                             products = uiState.products,
                             expandedProductId = uiState.expandedProductId,
                             onProductClick = { onProductClick(it) },
                             onRatingClick = toggleExpanded,
+                        )
+                    }
+
+                    is HomeUiState.Empty -> {
+                        EmptyContent(modifier = Modifier.align(Alignment.Center))
+                    }
+
+                    is HomeUiState.Error -> {
+                        ErrorContent(
+                            message = uiState.message,
+                            onRetry = onRefresh,
+                            modifier = Modifier.align(Alignment.Center),
                         )
                     }
                 }
@@ -177,18 +185,32 @@ private fun SearchBar(
     onQueryChange: (String) -> Unit,
     onClear: () -> Unit,
 ) {
+    var textFieldValue by remember(query) {
+        mutableStateOf(
+            TextFieldValue(
+                text = query,
+                selection = TextRange(query.length)
+            )
+        )
+    }
+
     OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
+        value = textFieldValue,
+        onValueChange = {
+            textFieldValue = it
+            onQueryChange(it.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text(stringResource(R.string.home_search_placeholder)) },
+        placeholder = {
+            Text(stringResource(R.string.home_search_placeholder))
+        },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null)
         },
         trailingIcon = {
-            if (query.isNotEmpty()) {
+            if (textFieldValue.text.isNotEmpty()) {
                 IconButton(onClick = onClear) {
                     Icon(
                         Icons.Default.Close,
@@ -512,13 +534,12 @@ private fun HomeScreenPreview() {
         )
     )
 
-    val uiState = HomeUiState(
+    val uiState = HomeUiState.Success(
         products = sampleProducts,
-        isLoading = false,
-        error = null,
-        searchQuery = "",
         sortOrder = SortOrder.BEST_TO_WORST,
+        searchQuery = "",
         expandedProductId = null,
+        isRefreshing = false,
     )
 
     HomeScreenContent(

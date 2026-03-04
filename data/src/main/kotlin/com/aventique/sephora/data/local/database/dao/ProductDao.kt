@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import com.aventique.sephora.data.local.database.entity.ProductEntity
 import com.aventique.sephora.data.local.database.entity.ProductWithReviews
 import com.aventique.sephora.data.local.database.entity.ReviewEntity
-import com.aventique.sephora.domain.common.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 @Dao
