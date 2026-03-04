@@ -1,6 +1,6 @@
 package com.aventique.sephora.data.repository
 
-import com.aventique.sephora.data.common.toErrorType
+import com.aventique.sephora.data.local.database.entity.ProductWithReviews
 import com.aventique.sephora.data.local.datasource.ProductLocalDataSource
 import com.aventique.sephora.data.mapper.toDomain
 import com.aventique.sephora.data.remote.datasource.ProductRemoteDataSource
@@ -29,17 +29,15 @@ class ProductRepositoryImpl(
 
                 is DataResult.Failure -> {
                     // Try to fetch from local cache as fallback
-                    localDataSource.getAllProductsWithReviews().collect { list ->
-                        try {
-                            val products = list.toDomain()
-                            if (products.isEmpty()) {
-                                emit(DataResult.Failure(remoteResult.error))
-                            } else {
-                                val processed = applyFilterAndSort(products, query, sortOrder)
-                                emit(DataResult.Success(processed))
-                            }
-                        } catch (e: Exception) {
-                            emit(DataResult.Failure(e.toErrorType()))
+                    when (val result = localDataSource.getAllProductsWithReviews()) {
+                        is DataResult.Failure -> {
+                            emit(DataResult.Failure(result.error))
+                        }
+
+                        is DataResult.Success<List<ProductWithReviews>> -> {
+                            val products = result.data.map { it.toDomain() }
+                            val processed = applyFilterAndSort(products, query, sortOrder)
+                            emit(DataResult.Success(processed))
                         }
                     }
                 }

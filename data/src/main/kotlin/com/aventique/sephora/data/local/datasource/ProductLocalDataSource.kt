@@ -9,7 +9,8 @@ import com.aventique.sephora.domain.model.Product
 import kotlinx.coroutines.flow.Flow
 
 interface ProductLocalDataSource {
-    fun getAllProductsWithReviews(): Flow<List<ProductWithReviews>>
+    fun getAllProductsWithReviewsFlow(): Flow<List<ProductWithReviews>>
+    suspend fun getAllProductsWithReviews(): DataResult<List<ProductWithReviews>>
     suspend fun getProductById(id: Long): DataResult<ProductWithReviews?>
     suspend fun saveProducts(products: List<Product>): DataResult<Unit>
 }
@@ -17,8 +18,12 @@ interface ProductLocalDataSource {
 
 class ProductLocalDataSourceImpl(private val dao: ProductDao) : ProductLocalDataSource {
 
-    override fun getAllProductsWithReviews(): Flow<List<ProductWithReviews>> =
-        dao.getAllProductsWithReviews()
+    override fun getAllProductsWithReviewsFlow(): Flow<List<ProductWithReviews>> =
+        dao.getAllProductsWithReviewsFlow()
+
+    override suspend fun getAllProductsWithReviews(): DataResult<List<ProductWithReviews>>  = safeCall {
+         dao.getAllProductsWithReviews()
+    }
 
     override suspend fun getProductById(id: Long): DataResult<ProductWithReviews?> = safeCall {
         dao.getProductWithReviewsById(id)

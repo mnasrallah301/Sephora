@@ -8,13 +8,18 @@ import androidx.room.Transaction
 import com.aventique.sephora.data.local.database.entity.ProductEntity
 import com.aventique.sephora.data.local.database.entity.ProductWithReviews
 import com.aventique.sephora.data.local.database.entity.ReviewEntity
+import com.aventique.sephora.domain.common.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductDao {
     @Transaction
     @Query("SELECT * FROM products")
-    fun getAllProductsWithReviews(): Flow<List<ProductWithReviews>>
+    fun getAllProductsWithReviewsFlow(): Flow<List<ProductWithReviews>>
+
+    @Transaction
+    @Query("SELECT * FROM products")
+    suspend fun getAllProductsWithReviews(): List<ProductWithReviews>
 
     @Transaction
     @Query("SELECT * FROM products WHERE id = :id")
